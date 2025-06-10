@@ -47,7 +47,3 @@ class Book(db.Model):
     
     def __str__(self):
         return f"'{self.title}' published in {self.publication_year if self.publication_year else 'Unknown'}"
-
-# Run once to populate db
-with app.app_context():
-  db.create_all()

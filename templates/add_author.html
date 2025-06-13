@@ -5,8 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Add Author</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-      /* Basic styling for success flash message */
+      /* Inter font for better readability */
+      body {
+          font-family: 'Inter', sans-serif;
+      }
+      /* Basic styling for flash messages */
       .flash-message.success {
         color: green;
       }
@@ -15,34 +21,47 @@
       }
     </style>
   </head>
-  <body>
-    <h1>Add New Author</h1>
-    <!-- Flash messages will appear here -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            <div class="flash-messages-container">
-            {% for category, message in messages %}
-                <div class="flash-message {{ category }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-            </div>
-        {% endif %}
-    {% endwith %}
-    <br><br>
-    <br><br>
-    <form action="/add_author" method="POST">
-      <label for="name">Author Name:</label>
-      <input type="text" id="name" name="name" required><br><br>
+  <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+      <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">Add New Author 📚</h1>
 
-      <label for="birth_date">Birth Date (YYYY-MM-DD):</label>
-      <input type="date" id="birth_date" name="birth_date"><br><br>
+      <!-- Flash messages will appear here -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+              <div class="mb-4">
+              {% for category, message in messages %}
+                  <div class="p-3 mb-2 rounded-md {% if category == 'success' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+                      {{ message }}
+                  </div>
+              {% endfor %}
+              </div>
+          {% endif %}
+      {% endwith %}
 
-      <label for="date_of_death">Date of Death (YYYY-MM-DD):</label>
-      <input type="date" id="date_of_death" name="date_of_death"><br><br>
+      <form action="/add_author" method="POST" class="space-y-4">
+        <div>
+          <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Author Name:</label>
+          <input type="text" id="name" name="name" required
+                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+        </div>
 
-      <input type="submit" value="Add Author">
-    </form>
+        <div>
+          <label for="birth_date" class="block text-sm font-medium text-gray-700 mb-1">Birth Date (YYYY-MM-DD):</label>
+          <input type="date" id="birth_date" name="birth_date"
+                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+        </div>
 
+        <div>
+          <label for="date_of_death" class="block text-sm font-medium text-gray-700 mb-1">Date of Death (YYYY-MM-DD):</label>
+          <input type="date" id="date_of_death" name="date_of_death"
+                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+        </div>
+
+        <button type="submit"
+                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          Add Author
+        </button>
+      </form>
+    </div>
   </body>
 </html>

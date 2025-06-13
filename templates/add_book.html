@@ -4,12 +4,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Add Book</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Inter font for better readability */
+      body {
+          font-family: 'Inter', sans-serif;
+      }
+      /* Basic styling for flash messages */
+      .flash-message.success {
+        color: green;
+      }
+      .flash-message.error {
+        color: red;
+      }
+    </style>
   </head>
-  <body>
+  <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+      <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">Add New Book 📚</h1>
 
-  <form action="/add_author" method="POST">
-  <!-- Add the form here -->
-  </form>
+      <!-- Flash messages will appear here -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+              <div class="mb-4">
+              {% for category, message in messages %}
+                  <div class="p-3 mb-2 rounded-md {% if category == 'success' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+                      {{ message }}
+                  </div>
+              {% endfor %}
+              </div>
+          {% endif %}
+      {% endwith %}
 
+      <form action="/add_book" method="POST" class="space-y-4">
+        <div>
+          <label for="isbn" class="block text-sm font-medium text-gray-700 mb-1">ISBN (e.g., 978-0345391803):</label>
+          <input type="text" id="isbn" name="isbn" required maxlength="20"
+                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+        </div>
+
+        <div>
+          <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title:</label>
+          <input type="text" id="title" name="title" required
+                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+        </div>
+
+        <div>
+          <label for="publication_year" class="block text-sm font-medium text-gray-700 mb-1">Publication Year:</label>
+          <input type="number" id="publication_year" name="publication_year" min="1000" max="{{ current_year }}"
+                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+        </div>
+
+        <div>
+          <label for="author_id" class="block text-sm font-medium text-gray-700 mb-1">Author:</label>
+          <select id="author_id" name="author_id" required
+                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            <option value="">-- Select an Author --</option>
+            {% for author in authors %}
+              <option value="{{ author.id }}">{{ author.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <button type="submit"
+                class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          Add Book
+        </button>
+      </form>
+    </div>
   </body>
 </html>

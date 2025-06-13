@@ -4,19 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Add Author</title>
+    <style>
+      /* Basic styling for success flash message */
+      .flash-message.success {
+        color: green;
+      }
+      .flash-message.error {
+        color: red;
+      }
+    </style>
   </head>
   <body>
+    <h1>Add New Author</h1>
+    <!-- Flash messages will appear here -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages-container">
+            {% for category, message in messages %}
+                <div class="flash-message {{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    <br><br>
+    <br><br>
+    <form action="/add_author" method="POST">
+      <label for="name">Author Name:</label>
+      <input type="text" id="name" name="name" required><br><br>
 
-  <form action="/add_author" method="POST">
-  <label for="name">Author Name:</label> 
-  <input type="text" id="name" name="name" required><br><br>
-  
-  <label for="birthdate">Birthdate:</label> 
-  <input type="date" id="birthdate" name="birthdate" required><br><br> 
-  <label for="date_of_death">Date of Death:</label> 
-  <input type="date" id="date_of_death" name="date_of_death"><br><br>
-  <input type="submit" value="Add Author"> 
-  </form>
+      <label for="birth_date">Birth Date (YYYY-MM-DD):</label>
+      <input type="date" id="birth_date" name="birth_date"><br><br>
+
+      <label for="date_of_death">Date of Death (YYYY-MM-DD):</label>
+      <input type="date" id="date_of_death" name="date_of_death"><br><br>
+
+      <input type="submit" value="Add Author">
+    </form>
 
   </body>
 </html>

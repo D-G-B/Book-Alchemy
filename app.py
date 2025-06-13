@@ -1,8 +1,8 @@
 from flask import Flask, render_template, request, flash, redirect, url_for
-from data_models import db, Author, Book # Import Author and Book models
-import os # For operating system path operations
-from datetime import datetime # To parse dates from form input and get current year
-import re # Import regex for ISBN normalization
+from data_models import db, Author, Book
+import os
+from datetime import datetime
+import re
 
 app = Flask(__name__)
 # Set a secret key for Flask's flash messages
@@ -40,8 +40,6 @@ def is_valid_isbn(isbn):
     Validates the normalized ISBN length and 'X' placement.
     Returns (True, None) for valid ISBN, or (False, error_message_string) for invalid.
     """
-    # This function assumes 'isbn' is not empty and already normalized.
-    # The empty check is now handled explicitly before calling this.
     if len(isbn) == 13:
         if 'X' in isbn:
             return False, "Invalid ISBN: 13-digit ISBNs cannot contain 'X'."
@@ -49,8 +47,6 @@ def is_valid_isbn(isbn):
         if 'X' in isbn[:-1]:
             return False, "Invalid ISBN: 'X' is only allowed as the last character for 10-digit ISBNs."
     else:
-        # This covers cases where normalized ISBN is not 10 or 13 digits long,
-        # but is not empty (e.g., 5 digits, 12 digits, 14 digits etc.)
         return False, "ISBN must be 10 or 13 digits long after removing dashes/spaces."
     return True, None # ISBN is valid
 

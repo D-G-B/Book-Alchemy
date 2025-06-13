@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, flash, redirect, url_for
-from flask_sqlalchemy import SQLAlchemy
 from data_models import db, Author, Book # Import Author and Book models
 import os # For operating system path operations
 from datetime import datetime # To parse dates from form input and get current year
@@ -157,6 +156,70 @@ def add_book():
     authors = Author.query.all()
     current_year = datetime.now().year
     return render_template('add_book.html', authors=authors, current_year=current_year)
+
+# Route for deleting
+@app.route('/book/<int:book_id>/delete', methods=['POST'])
+def delete_book(book_id):
+    # Find the book to be deleted by its ID
+    book_to_delete = db.session.get(Book, book_id)
+
+    if not book_to_delete:
+        flash("Book not found.", 'error')
+        return redirect(url_for('home'))
+
+    try:
+        # Get the author associated with the book before deletion
+        author_of_book = book_to_delete.author
+
+        # Delete the book
+        db.session.delete(book_to_delete)
+        db.session.commit()
+        flash(f"Book '{book_to_delete.title}' deleted successfully!", 'success')
+
+        # Check if the author has any remaining books
+        # After deleting the book, query to see if this author still has books
+        remaining_books_by_author = Book.query.filter_by(author_id=author_of_book.id).count()
+
+        if remaining_books_by_author == 0:
+            # If no other books by this author, delete the author as well
+            db.session.delete(author_of_book)
+            db.session.commit()
+            flash(f"Author '{author_of_book.name}' also deleted as they have no remaining books.", 'success')
+
+    except Exception as e:
+        db.session.rollback() # Rollback in case of any error during deletion
+        flash(f"Error deleting book: {e}", 'error')
+
+    return redirect(url_for('home'))
+
+# Route for homepage
+@app.route('/')
+def home():
+    # Get sort_by parameter from URL query string, default to 'title'
+    sort_by = request.args.get('sort_by', 'title')
+    # Get search_query parameter from URL query string
+    search_query = request.args.get('query', '').strip() # .strip() removes leading/trailing whitespace
+
+    # Start with a base query for all books
+    books_query = Book.query
+
+    # Apply search filter if a query is provided
+    if search_query:
+        # Use .ilike() for case-insensitive partial matching on the title
+        books_query = books_query.filter(Book.title.ilike(f'%{search_query}%'))
+
+    # Apply sorting
+    if sort_by == 'author':
+        # Join with Author model to access author.name for sorting
+        books = books_query.join(Author).order_by(Author.name).all()
+    else: # Default or 'title'
+        books = books_query.order_by(Book.title).all()
+
+    # Pass books data, current sort_by, and search_query to the template
+    return render_template('home.html',
+                           books=books,
+                           sort_by=sort_by,
+                           search_query=search_query)
 
 
 # Run the Flask development server

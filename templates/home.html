@@ -4,13 +4,143 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>My Library</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Inter font for better readability */
+      body {
+          font-family: 'Inter', sans-serif;
+      }
+      /* Basic styling for flash messages */
+      .flash-message.success {
+        color: green;
+      }
+      .flash-message.error {
+        color: red;
+      }
+      .book-card {
+        background-color: #fff;
+        padding: 1rem;
+        padding-bottom: 2.5rem; /* Added padding to make space for the button at the bottom */
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        position: relative; /* Needed for absolute positioning of the delete button */
+      }
+      .book-cover {
+        flex-shrink: 0;
+        width: 100px; /* Fixed width for covers */
+        height: auto;
+        border-radius: 0.25rem;
+        object-fit: cover; /* Ensures image covers area without distortion */
+      }
+      .book-info {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        /* No longer needs position: relative as button is relative to book-card */
+      }
+      /* Adjusted delete button styling for bottom-right position */
+      .delete-button-container {
+        position: absolute; /* Position relative to .book-card */
+        bottom: 0.5rem; /* 0.5rem from the bottom */
+        right: 0.5rem; /* 0.5rem from the right */
+        z-index: 10; /* Ensure it's above other elements if minor overlap occurs */
+      }
+      /* Removed .book-title-and-delete as it's no longer necessary */
+      /* Removed .book-title styles as they are now standard h3 */
+    </style>
   </head>
-  <body>
+  <body class="bg-gray-100 p-4">
+    <div class="container mx-auto max-w-4xl">
+      <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Welcome to My Library 📚</h1>
 
-    {% for book in books %}
-    <div> <h3>{{ book.title }}</h3>
+      <!-- Navigation/Action Buttons -->
+      <nav class="mb-6 flex justify-center space-x-4">
+        <a href="{{ url_for('add_author') }}" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 shadow">Add Author</a>
+        <a href="{{ url_for('add_book') }}" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 shadow">Add Book</a>
+      </nav>
+
+      <!-- Flash messages will appear here -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+              <div class="mb-4">
+              {% for category, message in messages %}
+                  <div class="p-3 mb-2 rounded-md {% if category == 'success' %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-700{% endif %}">
+                      {{ message }}
+                  </div>
+              {% endfor %}
+              </div>
+          {% endif %}
+      {% endwith %}
+
+      <h2 class="text-xl font-semibold mb-4 text-gray-700">Available Books</h2>
+
+      <!-- Search Form -->
+      <form action="{{ url_for('home') }}" method="GET" class="mb-6 flex items-center space-x-2">
+        <input type="text" name="query" placeholder="Search by title..."
+               value="{{ search_query }}"
+               class="flex-grow px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+        <button type="submit"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow">
+          Search
+        </button>
+        {% if search_query %}
+          <a href="{{ url_for('home', sort_by=sort_by) }}"
+             class="px-3 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 shadow">Clear Search</a>
+        {% endif %}
+      </form>
+
+      <!-- Sorting Controls -->
+      <div class="mb-4 flex items-center space-x-2">
+        <span class="text-gray-700">Sort by:</span>
+        <a href="{{ url_for('home', sort_by='title', query=search_query) }}" {# Preserve search query #}
+           class="px-3 py-1 rounded-md {% if sort_by == 'title' %}bg-indigo-600 text-white{% else %}bg-gray-200 text-gray-700{% endif %} hover:bg-indigo-700 hover:text-white">Title</a>
+        <a href="{{ url_for('home', sort_by='author', query=search_query) }}" {# Preserve search query #}
+           class="px-3 py-1 rounded-md {% if sort_by == 'author' %}bg-indigo-600 text-white{% else %}bg-gray-200 text-gray-700{% endif %} hover:bg-indigo-700 hover:text-white">Author</a>
+      </div>
+
+      {% if books %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {% for book in books %}
+            <div class="book-card">
+              <img src="https://covers.openlibrary.org/b/isbn/{{ book.isbn }}-M.jpg"
+                   alt="Cover of {{ book.title }}"
+                   class="book-cover"
+                   onerror="this.onerror=null;this.src='data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJMYXllcl8xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4PSIwcHgiIHk9IjBweCIKCSB2aWV3Qm94PSIwIDAgMjAwIDIwMCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMjAwIDIwMDsiIHhtbDpzcGFjZT0icHJlc2VydmUiPgogICAgPHrectHwd3M9IjEwMCUiIGhlaWdodD0iMTAwJSIgc3R5bGU9ImZpbGw6I2UwZTAzZTsiLz4KICAgIDxyZWN0IHN0eWxlPSJmaWxsOiM2NjY2Njc7IiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeD0iNTAiIHk9IjUwIj48L3JlY3Q+CiAgICA8cG9seWdvbiBzdHlsZT0iZmlsbDojRkZGRkZGOyIgcG9pbnRzPSIxMDAsMTAwIDEwMCwxNjAgMTYwLDE2MCAxNjAsMTQwIDE0MCwxNDAgMTQwLDEyMCAxMjAsMTIwIDEyMCwxMDAgIj48L3BvbHlnb24+CiAgICA8cGF0aCBzdHlsZT0iZmlsbDojRkZGRkZGOyIgZD0iTTUwLDE0MGgxMDBWNjBINTBWMTR6IE05MCw5MGgyMHYyMEgxMzJ2MjBIMTMydjIwSDkwVjEwMHoiLz4KICAgIDx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkeT0iMC4zNWVtIiBzdHlsZT0iZm9udC1mYW1pbHk6QXJpYWw7IGZvbnQtd2VpZ2h0OmJvbGQ7IGZvbnQtc2l6ZToxMnB4OyB0ZXh0LWFuY2hvcjptaWRkbGU7IGZpbGw6I0ZGRkZGRjsiPlBPT0s8L3RleHQ+Cjwvc3ZnPg=='"
+              >
+              <div class="book-info">
+                <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ book.title }}</h3>
+                <p class="text-gray-700 text-sm">by {{ book.author.name }}</p>
+                {% if book.publication_year %}
+                    <p class="text-gray-600 text-xs">Published: {{ book.publication_year }}</p>
+                {% endif %}
+                <p class="text-gray-500 text-xs">ISBN: {{ book.isbn }}</p>
+              </div>
+              <div class="delete-button-container">
+                <form action="{{ url_for('delete_book', book_id=book.id) }}" method="POST">
+                  <button type="submit"
+                          class="bg-red-500 text-white text-xs px-2 py-1 rounded-full hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow"
+                          onclick="return confirm('Are you sure you want to delete \'{{ book.title }}\'?');">
+                    ✕
+                  </button>
+                </form>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-center text-gray-600 mt-8">
+          {% if search_query %}
+            No books found matching "{{ search_query }}". <a href="{{ url_for('home') }}" class="text-blue-500 hover:underline">View all books.</a>
+          {% else %}
+            No books in the library yet. <a href="{{ url_for('add_book') }}" class="text-blue-500 hover:underline">Add one!</a>
+          {% endif %}
+        </p>
+      {% endif %}
     </div>
-    {% endfor %}
-
   </body>
 </html>

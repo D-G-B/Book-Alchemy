@@ -63,7 +63,7 @@ def flash_and_redirect(message, category='error', endpoint='add_book'):
 def add_author():
     if request.method == 'POST':
         # Retrieve form data
-        author_name = request.form['name']
+        author_name = request.form['name'].strip()
         birth_date_str = request.form.get('birth_date')
         death_date_str = request.form.get('date_of_death')
 
@@ -101,7 +101,7 @@ def add_book():
     if request.method == 'POST':
         # Retrieve form data
         raw_isbn = request.form['isbn']
-        title = request.form['title']
+        title = request.form['title'].strip()
         publication_year = request.form.get('publication_year', type=int)
         author_id = request.form.get('author_id', type=int)
 

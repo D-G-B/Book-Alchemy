@@ -194,15 +194,20 @@ def home():
     # Get sort_by parameter from URL query string, default to 'title'
     sort_by = request.args.get('sort_by', 'title')
     # Get search_query parameter from URL query string
-    search_query = request.args.get('query', '').strip() # .strip() removes leading/trailing whitespace
+    search_query = request.args.get('query', '').strip()
+    # New: Get search_type parameter from URL query string, default to 'title'
+    search_type = request.args.get('search_type', 'title')
 
     # Start with a base query for all books
     books_query = Book.query
 
     # Apply search filter if a query is provided
     if search_query:
-        # Use .ilike() for case-insensitive partial matching on the title
-        books_query = books_query.filter(Book.title.ilike(f'%{search_query}%'))
+        if search_type == 'author': # Check if search type is author
+            books_query = books_query.join(Author).filter(Author.name.ilike(f'%{search_query}%'))
+        else: # Default to 'title' search if no type or type is 'title'
+            books_query = books_query.filter(Book.title.ilike(f'%{search_query}%'))
+
 
     # Apply sorting
     if sort_by == 'author':
@@ -211,13 +216,14 @@ def home():
     else: # Default or 'title'
         books = books_query.order_by(Book.title).all()
 
-    # Pass books data, current sort_by, and search_query to the template
+    # Pass books data, current sort_by, search_query, and search_type to the template
     return render_template('home.html',
                            books=books,
                            sort_by=sort_by,
-                           search_query=search_query)
+                           search_query=search_query,
+                           search_type=search_type) # Pass search_type to template
 
 
 # Run the Flask development server
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5001)
